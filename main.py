@@ -34,7 +34,7 @@ class Prince(Widget):
         self.hero_pos = [0, 0]  
 
         with self.canvas:
-            self.hero = Rectangle(pos=self.hero_pos, size=(50, 50))
+            self.hero = Rectangle(pos=self.hero_pos, size=(100, 100))
 
         Clock.schedule_interval(self.update_animation, 0.1)
         Clock.schedule_interval(self.move_step, 0)
@@ -110,6 +110,10 @@ class Prince(Widget):
 
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
+
+class Door(Widget):
+    pass
+
 
 class MenuScreen(Screen):
     pass
