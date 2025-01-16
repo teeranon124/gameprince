@@ -4,6 +4,8 @@ from kivy.uix.widget import Widget
 from kivy.graphics import Rectangle
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.lang import Builder
 
 class Prince(Widget):
     def __init__(self, **kwargs):
@@ -109,21 +111,26 @@ class Prince(Widget):
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
 
-
-class MainWidget(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_widget(Prince())
+class MenuScreen(Screen):
+    pass
 
 
-class MyApp(App):
+class GameScreen(Screen):
+    def on_enter(self, *args):
+        self.add_widget(Prince())  
+
+
+class GameApp(App):
     def build(self):
-        return MainWidget()
+        Builder.load_file("game.kv") 
+        sm = ScreenManager()
+        sm.add_widget(MenuScreen(name="menu"))
+        sm.add_widget(GameScreen(name="game"))
+        return sm
 
 
 if __name__ == '__main__':
-    app = MyApp()
-    app.run()
+    GameApp().run()
 
 
 

@@ -1,0 +1,25 @@
+<MenuScreen>:
+    FloatLayout:
+        Button:
+            text: "Start Game"
+            font_size: 24
+            size_hint: 0.3, 0.1
+            pos_hint: {"center_x": 0.5, "center_y": 0.6}
+            on_release:
+                app.root.current = "game"
+        Button:
+            text: "Quit game"
+            font_size: 24
+            size_hint: 0.3, 0.1
+            pos_hint: {"center_x": 0.5, "center_y": 0.4}
+            on_release:
+                app.stop()
+
+    
+
+<GameScreen>:
+    FloatLayout:
+        Label:
+            text: "Protect"
+            font_size: 20
+            pos_hint: {"center_x": 0.5, "center_y": 0.9}
