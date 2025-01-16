@@ -13,8 +13,8 @@ class Prince(Widget):
         self._keyboard.bind(on_key_up=self._on_key_up)
         self.pressed_keys = set()
 
-        # โหลด sprites จากโฟลเดอร์ image
-        self.sprites_path = "image"
+
+        self.sprites_path = "images"
         self.animations = {
             'walk_left': self.load_sprites('LeftRun'),
             'walk_right': self.load_sprites('RightRun'),
@@ -29,7 +29,7 @@ class Prince(Widget):
         self.current_animation = 'walk_down'
         self.current_frame = 0
         self.is_attacking = False
-        self.hero_pos = [0, 0]  # ตำแหน่งเริ่มต้นของตัวละคร
+        self.hero_pos = [0, 0]  
 
         with self.canvas:
             self.hero = Rectangle(pos=self.hero_pos, size=(50, 50))
@@ -38,7 +38,6 @@ class Prince(Widget):
         Clock.schedule_interval(self.move_step, 0)
 
     def load_sprites(self, folder_name):
-        #โหลดsprites
         path = os.path.join(self.sprites_path, folder_name)
         return [os.path.join(path, file) for file in sorted(os.listdir(path)) if file.endswith('.png')]
 
