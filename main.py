@@ -31,7 +31,9 @@ class Prince(Widget):
         self.current_animation = 'walk_down'
         self.current_frame = 0
         self.is_attacking = False
-        self.hero_pos = [0, 0]  
+        self.hero_pos = [0, 0]
+        self.is_on_door = False  # ตรวจสอบสถานะว่าตัวละครอยู่บนประตูหรือไม่
+        self.door_timer = None  # ใช้สำหรับจับเวลา  
 
         with self.canvas:
             self.hero = Rectangle(pos=self.hero_pos, size=(100, 100))
@@ -79,6 +81,8 @@ class Prince(Widget):
         cur_x, cur_y = self.hero_pos
         step = 100 * dt
         is_moving = False
+        self.hero_pos = [cur_x, cur_y]
+        self.hero.pos = self.hero_pos
 
         if 'w' in self.pressed_keys:
             cur_y += step
@@ -110,6 +114,30 @@ class Prince(Widget):
 
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
+        self.check_collision_with_door()
+    
+    def check_collision_with_door(self):
+        door = self.parent.ids.door  # เข้าถึงวัตถุประตูจาก kv
+        prince_rect = self.hero_pos[0], self.hero_pos[1], self.hero.size[0], self.hero.size[1]
+        door_rect = door.pos[0], door.pos[1], door.size[0], door.size[1]
+
+        if self.collides(prince_rect, door_rect):
+            if not self.is_on_door:
+                self.is_on_door = True
+                self.door_timer = Clock.schedule_once(self.enter_next_level, 3)  # เริ่มจับเวลา 3 วินาที
+        else:
+            if self.is_on_door:
+                self.is_on_door = False
+                if self.door_timer:
+                    self.door_timer.cancel()  # ยกเลิก timer หากออกจากประตู
+    @staticmethod
+    def collides(rect1, rect2):
+        x1, y1, w1, h1 = rect1
+        x2, y2, w2, h2 = rect2
+        return not (x1 > x2 + w2 or x1 + w1 < x2 or y1 > y2 + h2 or y1 + h1 < y2)
+
+    def enter_next_level(self, dt):
+        self.parent.manager.current = "next_level"  # เปลี่ยนเป็นหน้าจอถัดไป
 
 class Door(Widget):
     pass
@@ -124,12 +152,18 @@ class GameScreen(Screen):
         self.add_widget(Prince())  
 
 
+class GameScreenTwo(Screen):
+    def on_enter(self, *args):
+        self.add_widget(Prince()) 
+
+
 class GameApp(App):
     def build(self):
         Builder.load_file("game.kv") 
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(GameScreen(name="game"))
+        sm.add_widget(GameScreenTwo(name="next_level"))  # เพิ่มหน้าจอใหม่
         return sm
 
 

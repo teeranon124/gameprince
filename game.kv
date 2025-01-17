@@ -21,6 +21,7 @@
             font_size: 24
             size_hint: 0.3, 0.1
             pos_hint: {"center_x": 0.5, "center_y": 0.6}
+            background_normal: "images/background/cave.jpg"
             on_release:
                 app.root.current = "game"
         Button:
@@ -44,3 +45,15 @@
             font_size: 20
             pos_hint: {"center_x": 0.5, "center_y": 0.9}
         Door:
+            id: door
+        
+
+<GameScreenTwo>:
+    FloatLayout:
+        canvas.before:
+            Rectangle:
+                source: "images/background/cave.jpg"  
+                pos: self.pos
+                size: self.size
+        Door:
+            id: door
