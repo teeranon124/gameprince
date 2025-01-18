@@ -6,6 +6,39 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
+
+class Door(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.is_on_door = False
+        self.door_timer = None
+
+    def check_collision(self, prince_rect):
+        door_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
+
+        if self.collides(prince_rect, door_rect):
+            if not self.is_on_door:
+                self.is_on_door = True
+                self.door_timer = Clock.schedule_once(self.next_stage, 3)
+        else:
+            if self.is_on_door:
+                self.is_on_door = False
+                if self.door_timer:
+                    self.door_timer.cancel()
+
+    @staticmethod
+    def collides(rect1, rect2):
+        x1, y1, w1, h1 = rect1
+        x2, y2, w2, h2 = rect2
+        return not (x1 > x2 + w2 or x1 + w1 < x2 or y1 > y2 + h2 or y1 + h1 < y2)
+
+    def next_stage(self, dt):
+        current_screen = self.parent.parent.manager.current 
+
+        if current_screen == "game":  
+            self.parent.parent.manager.current = "stage_two"  
+        elif current_screen == "stage_two":  
+            self.parent.parent.manager.current = "stage_three" 
 from random import choice, randint
 
 class Prince(Widget):
@@ -113,70 +146,17 @@ class Prince(Widget):
 
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
-
-        # ตรวจสอบการชนกับประตู
-        door = self.parent.ids.door  # ถ้าใช้ screenmanager, ประตูอาจจะต้องใช้ self.parent.ids
+        
+        
+        door = self.parent.ids.door
         prince_rect = self.hero_pos[0], self.hero_pos[1], self.hero.size[0], self.hero.size[1]
-        door.check_collision(prince_rect)  # เรียกใช้ฟังก์ชัน check_collision ในคลาส Door 
+        door.check_collision(prince_rect)  
 
-class Door(Widget):
+class Monster(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.is_on_door = False
-        self.door_timer = None
-
-    def check_collision(self, prince_rect):
-        door_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
-
-        if self.collides(prince_rect, door_rect):
-            if not self.is_on_door:
-                self.is_on_door = True
-                self.door_timer = Clock.schedule_once(self.next_stage, 3)
-        else:
-            if self.is_on_door:
-                self.is_on_door = False
-                if self.door_timer:
-                    self.door_timer.cancel()
-
-    @staticmethod
-    def collides(rect1, rect2):
-        x1, y1, w1, h1 = rect1
-        x2, y2, w2, h2 = rect2
-        return not (x1 > x2 + w2 or x1 + w1 < x2 or y1 > y2 + h2 or y1 + h1 < y2)
-
-    def next_stage(self, dt):
-        current_screen = self.parent.parent.manager.current  # ตรวจสอบหน้าจอปัจจุบัน
-
-        if current_screen == "game":  # ถ้าอยู่ในด่านแรก
-            self.parent.parent.manager.current = "stage_two"  # ไปยังด่านที่ 2
-        elif current_screen == "stage_two":  # ถ้าอยู่ในด่านที่ 2
-            self.parent.parent.manager.current = "stage_three"  # ไปยังด่านที่ 3
-
-            
-            
-        
-
-
-
-
-
-# class Monster(Widget):
-#     def __init__(self, **kwargs):
-#         super().__init__(**kwargs)
-#         self.speed = randint(50, 100)  # ความเร็วในการเคลื่อนที่
-#         self.size_hint = None, None
-#         self.size = (80, 80)
-#         self.pos = (-self.size[0], randint(100, Window.height - 300))
-#         with self.canvas:
-#             self.monster = Rectangle(pos=self.pos, size=self.size, source=f"images/x.png")
-#         Clock.schedule_interval(self.move_step, 1/60)  # อัปเดตตำแหน่งทุกเฟรม
-#     def move_step(self, dt):
-#         x, y = self.pos
-
-#         x += self.speed * dt  # เคลื่อนที่ไปทางขวา
-#         self.pos = (x, y)
-#         self.monster.pos = self.pos
-    
+        # สุ่มตำแหน่งเริ่มต้น
+        self.pos = (randint(100, 500), randint(100, 500))
 class MenuScreen(Screen):
     pass
 
@@ -184,15 +164,10 @@ class MenuScreen(Screen):
 class GameScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
-
-        # Clock.schedule_interval(self.spawn_monster, 1)    
+  
 
     def on_enter(self, *args):
         self.add_widget(Prince()) 
-
-    # def spawn_monster(self, dt):
-    #     monster = Monster()
-    #     self.add_widget(monster)  
 
 
 class GameScreenTwo(Screen):
@@ -206,7 +181,7 @@ class GameScreenThree(Screen):
 
 class GameApp(App):
     def build(self):
-        Builder.load_file("game.kv") 
+        
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(GameScreen(name="game"))
@@ -218,5 +193,5 @@ class GameApp(App):
 if __name__ == '__main__':
     GameApp().run()
 
-
+#  Builder.load_file("game.kv") 
 

@@ -10,6 +10,19 @@
             pos: self.pos
         Color:
             rgba: 1, 1, 1, 1 
+<Monster>:
+    size_hint: None, None
+    size: 50, 50
+    canvas:
+        Color:
+            rgba: 0, 1, 0, 1  # สีของมอนสเตอร์
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 1, 1, 1, 1 
+
+
 <MenuScreen>:
     FloatLayout:
         canvas.before:
@@ -34,45 +47,42 @@
             on_release:
                 app.stop()
 
-
 <GameScreen>:
     FloatLayout:
         canvas.before:
             Rectangle:
-                source: "images/background/cave.jpg"  
+                source: "images/background/cave.jpg"
                 pos: self.pos
                 size: self.size
-        Label:
-            text: "Protect"
-            font_size: 20
-            pos_hint: {"center_x": 0.5, "center_y": 0.9}
+        
         Door:
             id: door
 
-        
+        Monster:
+            id: monster_1
+        Monster:
+            id: monster_2
+        Monster:
+            id: monster_3
 
 <GameScreenTwo>:
     FloatLayout:
         canvas.before:
             Rectangle:
-                source: "images/background/cave.jpg"  
+                source: "images/background/cave.jpg"
                 pos: self.pos
                 size: self.size
+        
         Door:
             id: door
-            size_hint: None, None
-            size: 135, 70
-            pos: 400, 300  # ตำแหน่งที่ต้องการ
 
 <GameScreenThree>:
     FloatLayout:
         canvas.before:
             Rectangle:
-                source: "images/background/cave.jpg"  
+                source: "images/background/cave.jpg"
                 pos: self.pos
                 size: self.size
+       
         Door:
             id: door
-            size_hint: None, None
-            size: 135, 70
-            pos: 400, 300  # ตำแหน่งที่ต้องการ
