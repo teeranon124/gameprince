@@ -6,6 +6,7 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
+from random import choice, randint
 
 class Prince(Widget):
     def __init__(self, **kwargs):
@@ -14,7 +15,6 @@ class Prince(Widget):
         self._keyboard.bind(on_key_down=self._on_key_down)
         self._keyboard.bind(on_key_up=self._on_key_up)
         self.pressed_keys = set()
-
 
         self.sprites_path = "images"
         self.animations = {
@@ -32,8 +32,6 @@ class Prince(Widget):
         self.current_frame = 0
         self.is_attacking = False
         self.hero_pos = [0, 0]
-        self.is_on_door = False  # ตรวจสอบสถานะว่าตัวละครอยู่บนประตูหรือไม่
-        self.door_timer = None  # ใช้สำหรับจับเวลา  
 
         with self.canvas:
             self.hero = Rectangle(pos=self.hero_pos, size=(100, 100))
@@ -54,13 +52,13 @@ class Prince(Widget):
 
             if self.current_frame >= len(frames):
                 if self.is_attacking and "attack" in self.current_animation:
-                    self.is_attacking = False 
+                    self.is_attacking = False
                 self.current_frame = 0
 
     def change_animation(self, animation):
         if self.current_animation != animation:
             self.current_animation = animation
-            self.current_frame = 0 
+            self.current_frame = 0
 
     def _on_keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self._on_key_down)
@@ -69,14 +67,13 @@ class Prince(Widget):
 
     def _on_key_down(self, keyboard, keycode, text, modifiers):
         self.pressed_keys.add(text)
-        print("keydown",text)
+        print("key down",text)
 
     def _on_key_up(self, keyboard, keycode):
         text = keycode[1]
         if text in self.pressed_keys:
             self.pressed_keys.remove(text)
-            print("keyup")
-
+            print("key up",text)
     def move_step(self, dt):
         cur_x, cur_y = self.hero_pos
         step = 100 * dt
@@ -104,55 +101,105 @@ class Prince(Widget):
             is_moving = True
             if not self.is_attacking:
                 self.change_animation('walk_right')
+
         if 'g' in self.pressed_keys:
-            if not self.is_attacking:  
+            if not self.is_attacking:
                 self.is_attacking = True
-                direction = self.current_animation.split('_')[1]  # ทิศทางปัจจุบัน (left, right, up, down)
+                direction = self.current_animation.split('_')[1]
                 self.change_animation(f'attack_{direction}')
+
         if not is_moving and not self.is_attacking:
             self.current_frame = 0
 
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
-        self.check_collision_with_door()
-    
-    def check_collision_with_door(self):
-        door = self.parent.ids.door  # เข้าถึงวัตถุประตูจาก kv
+
+        # ตรวจสอบการชนกับประตู
+        door = self.parent.ids.door  # ถ้าใช้ screenmanager, ประตูอาจจะต้องใช้ self.parent.ids
         prince_rect = self.hero_pos[0], self.hero_pos[1], self.hero.size[0], self.hero.size[1]
-        door_rect = door.pos[0], door.pos[1], door.size[0], door.size[1]
+        door.check_collision(prince_rect)  # เรียกใช้ฟังก์ชัน check_collision ในคลาส Door 
+
+class Door(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.is_on_door = False
+        self.door_timer = None
+
+    def check_collision(self, prince_rect):
+        door_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
 
         if self.collides(prince_rect, door_rect):
             if not self.is_on_door:
                 self.is_on_door = True
-                self.door_timer = Clock.schedule_once(self.enter_next_level, 3)  # เริ่มจับเวลา 3 วินาที
+                self.door_timer = Clock.schedule_once(self.next_stage, 3)
         else:
             if self.is_on_door:
                 self.is_on_door = False
                 if self.door_timer:
-                    self.door_timer.cancel()  # ยกเลิก timer หากออกจากประตู
+                    self.door_timer.cancel()
+
     @staticmethod
     def collides(rect1, rect2):
         x1, y1, w1, h1 = rect1
         x2, y2, w2, h2 = rect2
         return not (x1 > x2 + w2 or x1 + w1 < x2 or y1 > y2 + h2 or y1 + h1 < y2)
 
-    def enter_next_level(self, dt):
-        self.parent.manager.current = "next_level"  # เปลี่ยนเป็นหน้าจอถัดไป
+    def next_stage(self, dt):
+        current_screen = self.parent.parent.manager.current  # ตรวจสอบหน้าจอปัจจุบัน
 
-class Door(Widget):
-    pass
+        if current_screen == "game":  # ถ้าอยู่ในด่านแรก
+            self.parent.parent.manager.current = "stage_two"  # ไปยังด่านที่ 2
+        elif current_screen == "stage_two":  # ถ้าอยู่ในด่านที่ 2
+            self.parent.parent.manager.current = "stage_three"  # ไปยังด่านที่ 3
+
+            
+            
+        
 
 
+
+
+
+# class Monster(Widget):
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
+#         self.speed = randint(50, 100)  # ความเร็วในการเคลื่อนที่
+#         self.size_hint = None, None
+#         self.size = (80, 80)
+#         self.pos = (-self.size[0], randint(100, Window.height - 300))
+#         with self.canvas:
+#             self.monster = Rectangle(pos=self.pos, size=self.size, source=f"images/x.png")
+#         Clock.schedule_interval(self.move_step, 1/60)  # อัปเดตตำแหน่งทุกเฟรม
+#     def move_step(self, dt):
+#         x, y = self.pos
+
+#         x += self.speed * dt  # เคลื่อนที่ไปทางขวา
+#         self.pos = (x, y)
+#         self.monster.pos = self.pos
+    
 class MenuScreen(Screen):
     pass
 
 
 class GameScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        # Clock.schedule_interval(self.spawn_monster, 1)    
+
     def on_enter(self, *args):
-        self.add_widget(Prince())  
+        self.add_widget(Prince()) 
+
+    # def spawn_monster(self, dt):
+    #     monster = Monster()
+    #     self.add_widget(monster)  
 
 
 class GameScreenTwo(Screen):
+    def on_enter(self, *args):
+        self.add_widget(Prince()) 
+
+class GameScreenThree(Screen):
     def on_enter(self, *args):
         self.add_widget(Prince()) 
 
@@ -163,7 +210,8 @@ class GameApp(App):
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(GameScreen(name="game"))
-        sm.add_widget(GameScreenTwo(name="next_level"))  # เพิ่มหน้าจอใหม่
+        sm.add_widget(GameScreenTwo(name="stage_two")) 
+        sm.add_widget(GameScreenThree(name="stage_three")) 
         return sm
 
 
