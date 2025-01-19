@@ -68,6 +68,7 @@ class Prince(Widget):
         self.current_frame = 0
         self.is_attacking = False
         self.hero_pos = [0, 0]
+        
 
         with self.canvas:
             self.hero = Rectangle(pos=self.hero_pos, size=(100, 100))
@@ -93,7 +94,10 @@ class Prince(Widget):
         self.hp -= damage
         if self.hp <= 0:
             self.hp = 0
+            App.get_running_app().root.current = "game_over"  # เปลี่ยนเป็นแบบนี้
         print(f"Prince HP: {self.hp}")
+
+
 
     def load_sprites(self, folder_name):
         path = os.path.join(self.sprites_path, folder_name)
@@ -182,13 +186,77 @@ class Prince(Widget):
 class Monster(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.pos = (randint(100, 500), randint(100, 500))
-        self.is_on_monster = False
+        # สุ่มตำแหน่งเริ่มต้นจากซ้ายหรือขวาของจอ
+        screen_width = Window.width
+        screen_height = Window.height
+        side = choice(['left', 'right'])
+        y_pos = randint(50, screen_height - 50)
+        self.pos = (0, y_pos) if side == 'left' else (screen_width, y_pos)
+        self.direction = [-1, 1][side == 'left']  # ซ้าย -1, ขวา +1
+        self.speed = randint(150, 250)  # กำหนดความเร็วสุ่ม
+        self.vertical_speed = randint(-100, 100)  # ความเร็วแนวตั้ง
+
         self.hp = 200
-        self.dm = 30
+        self.dm = 10
         self.is_hit = False
         self.can_attack = True
-        Clock.schedule_interval(self.reset_attack, 3)  # Attack reset every 3 seconds
+        
+        # สร้าง sprite และ health bar
+        with self.canvas:
+            Color(0.7, 0.7, 0.7, 1)
+            self.hp_bg = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80, 8))
+            Color(1, 0, 0, 1)
+            self.hp_bar = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80 * (self.hp / 200), 8))
+
+        # Schedule updates
+        Clock.schedule_interval(self.update_position, 1 / 60)
+        Clock.schedule_interval(self.update_hp_bar, 1 / 60)
+
+    def update_position(self, dt):
+        screen_width = Window.width
+        screen_height = Window.height
+
+        # อัปเดตตำแหน่ง
+        new_x = self.pos[0] + self.direction * self.speed * dt
+        new_y = self.pos[1] + self.vertical_speed * dt
+
+        # ชนขอบหน้าจอแล้วเปลี่ยนทิศทาง
+        if new_x <= 0 or new_x >= screen_width - self.size[0]:
+            self.direction *= -1  # กลับทิศทาง
+        if new_y <= 0 or new_y >= screen_height - self.size[1]:
+            self.vertical_speed *= -1  # กลับทิศทางแนวตั้ง
+
+        self.pos = (new_x, new_y)
+
+    def update_hp_bar(self, dt):
+        self.hp_bg.pos = (self.pos[0], self.pos[1] + 60)
+        self.hp_bar.pos = (self.pos[0], self.pos[1] + 60)
+        self.hp_bar.size = (80 * (self.hp / 200), 8)
+
+    def take_damage(self, damage):
+        self.hp -= damage
+        if self.hp <= 0:
+            print("Monster defeated!")
+            if self.parent:
+                self.parent.remove_widget(self)
+
+
+    def check_attack_collision(self, prince_rect, is_attacking):
+        monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
+        if is_attacking and Door.collides(prince_rect, monster_rect):
+            if not self.is_hit:
+                self.hp -= 20
+                print(f"Monster HP: {self.hp}")
+                self.is_hit = True
+                if self.hp <= 0:
+                    print("Monster defeated!")
+                    if self.parent:
+                        Clock.unschedule(self.reset_attack)
+                        Clock.unschedule(self.update_position)
+                        Clock.unschedule(self.update_hp_bar)
+                        self.parent.remove_widget(self)
+        else:
+            self.is_hit = False
 
     def reset_attack(self, dt):
         self.can_attack = True
@@ -212,7 +280,7 @@ class Monster(Widget):
                 if self.hp <= 0:
                     print("Monster defeated!")
                     if self.parent:
-                        Clock.unschedule(self.reset_attack)  # Clean up scheduled event
+                        Clock.unschedule(self.reset_attack)  
                         self.parent.remove_widget(self)
         else:
             self.is_hit = False
@@ -221,8 +289,12 @@ class Monster(Widget):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if Door.collides(prince_rect, monster_rect) and self.can_attack:
             prince_obj.take_damage(self.dm)
-            self.can_attack = False  # Prevent attacking until reset
+            self.can_attack = False  
             print("Monster attacks Prince!")
+
+class GameOver(Screen):
+    pass
+
 
 class MenuScreen(Screen):
     pass
@@ -247,9 +319,11 @@ class GameApp(App):
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(GameScreen(name="game"))
+        sm.add_widget(GameOver(name = "game_over"))
         sm.add_widget(GameScreenTwo(name="stage_two"))
         sm.add_widget(GameScreenThree(name="stage_three"))
         return sm
+    
 
 if __name__ == '__main__':
     GameApp().run()
