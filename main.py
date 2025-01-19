@@ -6,6 +6,8 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
+from random import choice, randint
+from kivy.graphics import Color, Rectangle
 
 class Door(Widget):
     def __init__(self, **kwargs):
@@ -39,8 +41,6 @@ class Door(Widget):
             self.parent.parent.manager.current = "stage_two"  
         elif current_screen == "stage_two":  
             self.parent.parent.manager.current = "stage_three" 
-from random import choice, randint
-from kivy.graphics import Color, Rectangle
 
 class Prince(Widget):
     def __init__(self, **kwargs):
@@ -70,35 +70,29 @@ class Prince(Widget):
         self.hero_pos = [0, 0]
 
         with self.canvas:
-            # สร้างตัวละคร
             self.hero = Rectangle(pos=self.hero_pos, size=(100, 100))
             
-            # สร้างพื้นหลังแถบเลือด (สีเทา)
-            Color(0.7, 0.7, 0.7, 1)  # สีเทา
+            Color(0.7, 0.7, 0.7, 1)  
             self.hp_bg = Rectangle(pos=(self.hero_pos[0], self.hero_pos[1] + 110), 
                                  size=(100, 10))
             
-            # สร้างแถบเลือด (สีแดง)
-            Color(0, 0, 1, 1)  # สีแดง
+            Color(0, 0, 1, 1)  
             self.hp_bar = Rectangle(pos=(self.hero_pos[0], self.hero_pos[1] + 110), 
                                   size=(100 * (self.hp/100), 10))
 
         Clock.schedule_interval(self.update_animation, 0.1)
         Clock.schedule_interval(self.move_step, 0)
-        Clock.schedule_interval(self.update_hp_bar, 1/60)  # อัพเดทแถบเลือด 60 FPS
+        Clock.schedule_interval(self.update_hp_bar, 1/60)
 
     def update_hp_bar(self, dt):
-        # อัพเดทตำแหน่งแถบเลือด
         self.hp_bg.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
         self.hp_bar.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
-        # อัพเดทความยาวแถบเลือดตามค่า HP
         self.hp_bar.size = (100 * (self.hp/100), 10)
 
     def take_damage(self, damage):
         self.hp -= damage
         if self.hp <= 0:
             self.hp = 0
-            # เพิ่มโค้ดจัดการเมื่อ Prince ตายตรงนี้
         print(f"Prince HP: {self.hp}")
 
     def load_sprites(self, folder_name):
@@ -129,13 +123,12 @@ class Prince(Widget):
 
     def _on_key_down(self, keyboard, keycode, text, modifiers):
         self.pressed_keys.add(text)
-        print("key down",text)
 
     def _on_key_up(self, keyboard, keycode):
         text = keycode[1]
         if text in self.pressed_keys:
             self.pressed_keys.remove(text)
-            print("key up",text)
+
     def move_step(self, dt):
         cur_x, cur_y = self.hero_pos
         step = 100 * dt
@@ -176,26 +169,15 @@ class Prince(Widget):
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
         
-        
         door = self.parent.ids.door
         prince_rect = self.hero_pos[0], self.hero_pos[1], self.hero.size[0], self.hero.size[1]
         door.check_collision(prince_rect) 
 
-        for i,j in self.parent.ids.items():
-            if "monster" in i and j.parent :
+        for i, j in self.parent.ids.items():
+            if "monster" in i and j.parent:
                 j.check_collision(prince_rect)
-                
                 j.check_attack_collision(prince_rect, self.is_attacking)
                 j.attack_prince(prince_rect, self)
-
-                
-               
-                
-    
-               
-        
-         
-
 
 class Monster(Widget):
     def __init__(self, **kwargs):
@@ -204,10 +186,13 @@ class Monster(Widget):
         self.is_on_monster = False
         self.hp = 200
         self.dm = 30
-        self.is_hit = False 
+        self.is_hit = False
+        self.can_attack = True
+        Clock.schedule_interval(self.reset_attack, 3)  # Attack reset every 3 seconds
 
+    def reset_attack(self, dt):
+        self.can_attack = True
 
-    
     def check_collision(self, prince_rect):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if Door.collides(prince_rect, monster_rect):
@@ -220,69 +205,51 @@ class Monster(Widget):
     def check_attack_collision(self, prince_rect, is_attacking):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if is_attacking and Door.collides(prince_rect, monster_rect):
-            if not self.is_hit:  # ตรวจสอบว่า Monster ยังไม่ถูกโจมตีในรอบนี้
-                self.hp -= 20  # ลดพลังชีวิตเมื่อถูกโจมตี
+            if not self.is_hit:
+                self.hp -= 20
                 print(f"Monster HP: {self.hp}")
-                self.is_hit = True  # ตั้งค่าเป็น True เพื่อป้องกันการโจมตีซ้ำ
+                self.is_hit = True
                 if self.hp <= 0:
                     print("Monster defeated!")
-                    if self.parent:  # ตรวจสอบว่ามี parent ก่อนลบ
+                    if self.parent:
+                        Clock.unschedule(self.reset_attack)  # Clean up scheduled event
                         self.parent.remove_widget(self)
         else:
-            self.is_hit = False  # รีเซ็ตสถานะเมื่อไม่ได้ถูกโจมตี
+            self.is_hit = False
 
     def attack_prince(self, prince_rect, prince_obj):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
-        if Door.collides(prince_rect, monster_rect) :  # ตรวจสอบการชน
-            if not self.is_hit:  # ป้องกันการโจมตีซ้ำในรอบเดียว
-                prince_obj.take_damage(self.dm)  # Prince เสีย HP ตามค่า DM ของ Monster
-                self.is_hit = True
-                print("Monster attacks Prince!")
-        else:
-            self.is_hit = False  # รีเซ็ตสถานะเมื่อไม่ได้อยู่ในระยะโจมตี
-
-
-
-    
-
-
+        if Door.collides(prince_rect, monster_rect) and self.can_attack:
+            prince_obj.take_damage(self.dm)
+            self.can_attack = False  # Prevent attacking until reset
+            print("Monster attacks Prince!")
 
 class MenuScreen(Screen):
     pass
 
-
 class GameScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
-  
 
     def on_enter(self, *args):
         self.add_widget(Prince())
-     
-
 
 class GameScreenTwo(Screen):
     def on_enter(self, *args):
-        self.add_widget(Prince()) 
+        self.add_widget(Prince())
 
 class GameScreenThree(Screen):
     def on_enter(self, *args):
-        self.add_widget(Prince()) 
-
+        self.add_widget(Prince())
 
 class GameApp(App):
     def build(self):
-        
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(GameScreen(name="game"))
-        sm.add_widget(GameScreenTwo(name="stage_two")) 
-        sm.add_widget(GameScreenThree(name="stage_three")) 
+        sm.add_widget(GameScreenTwo(name="stage_two"))
+        sm.add_widget(GameScreenThree(name="stage_three"))
         return sm
-
 
 if __name__ == '__main__':
     GameApp().run()
-
-
-
