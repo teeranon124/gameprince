@@ -40,6 +40,7 @@ class Door(Widget):
         elif current_screen == "stage_two":  
             self.parent.parent.manager.current = "stage_three" 
 from random import choice, randint
+from kivy.graphics import Color, Rectangle
 
 class Prince(Widget):
     def __init__(self, **kwargs):
@@ -48,6 +49,8 @@ class Prince(Widget):
         self._keyboard.bind(on_key_down=self._on_key_down)
         self._keyboard.bind(on_key_up=self._on_key_up)
         self.pressed_keys = set()
+        self.hp = 100
+        self.dm = 20
 
         self.sprites_path = "images"
         self.animations = {
@@ -67,10 +70,36 @@ class Prince(Widget):
         self.hero_pos = [0, 0]
 
         with self.canvas:
+            # สร้างตัวละคร
             self.hero = Rectangle(pos=self.hero_pos, size=(100, 100))
+            
+            # สร้างพื้นหลังแถบเลือด (สีเทา)
+            Color(0.7, 0.7, 0.7, 1)  # สีเทา
+            self.hp_bg = Rectangle(pos=(self.hero_pos[0], self.hero_pos[1] + 110), 
+                                 size=(100, 10))
+            
+            # สร้างแถบเลือด (สีแดง)
+            Color(0, 0, 1, 1)  # สีแดง
+            self.hp_bar = Rectangle(pos=(self.hero_pos[0], self.hero_pos[1] + 110), 
+                                  size=(100 * (self.hp/100), 10))
 
         Clock.schedule_interval(self.update_animation, 0.1)
         Clock.schedule_interval(self.move_step, 0)
+        Clock.schedule_interval(self.update_hp_bar, 1/60)  # อัพเดทแถบเลือด 60 FPS
+
+    def update_hp_bar(self, dt):
+        # อัพเดทตำแหน่งแถบเลือด
+        self.hp_bg.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
+        self.hp_bar.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
+        # อัพเดทความยาวแถบเลือดตามค่า HP
+        self.hp_bar.size = (100 * (self.hp/100), 10)
+
+    def take_damage(self, damage):
+        self.hp -= damage
+        if self.hp <= 0:
+            self.hp = 0
+            # เพิ่มโค้ดจัดการเมื่อ Prince ตายตรงนี้
+        print(f"Prince HP: {self.hp}")
 
     def load_sprites(self, folder_name):
         path = os.path.join(self.sprites_path, folder_name)
@@ -150,13 +179,74 @@ class Prince(Widget):
         
         door = self.parent.ids.door
         prince_rect = self.hero_pos[0], self.hero_pos[1], self.hero.size[0], self.hero.size[1]
-        door.check_collision(prince_rect)  
+        door.check_collision(prince_rect) 
+
+        for i,j in self.parent.ids.items():
+            if "monster" in i and j.parent :
+                j.check_collision(prince_rect)
+                
+                j.check_attack_collision(prince_rect, self.is_attacking)
+                j.attack_prince(prince_rect, self)
+
+                
+               
+                
+    
+               
+        
+         
+
 
 class Monster(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # สุ่มตำแหน่งเริ่มต้น
         self.pos = (randint(100, 500), randint(100, 500))
+        self.is_on_monster = False
+        self.hp = 200
+        self.dm = 30
+        self.is_hit = False 
+
+
+    
+    def check_collision(self, prince_rect):
+        monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
+        if Door.collides(prince_rect, monster_rect):
+            if not self.is_on_monster:
+                self.is_on_monster = True
+                print("Monster collision detected!")
+        else:
+            self.is_on_monster = False
+
+    def check_attack_collision(self, prince_rect, is_attacking):
+        monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
+        if is_attacking and Door.collides(prince_rect, monster_rect):
+            if not self.is_hit:  # ตรวจสอบว่า Monster ยังไม่ถูกโจมตีในรอบนี้
+                self.hp -= 20  # ลดพลังชีวิตเมื่อถูกโจมตี
+                print(f"Monster HP: {self.hp}")
+                self.is_hit = True  # ตั้งค่าเป็น True เพื่อป้องกันการโจมตีซ้ำ
+                if self.hp <= 0:
+                    print("Monster defeated!")
+                    if self.parent:  # ตรวจสอบว่ามี parent ก่อนลบ
+                        self.parent.remove_widget(self)
+        else:
+            self.is_hit = False  # รีเซ็ตสถานะเมื่อไม่ได้ถูกโจมตี
+
+    def attack_prince(self, prince_rect, prince_obj):
+        monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
+        if Door.collides(prince_rect, monster_rect) :  # ตรวจสอบการชน
+            if not self.is_hit:  # ป้องกันการโจมตีซ้ำในรอบเดียว
+                prince_obj.take_damage(self.dm)  # Prince เสีย HP ตามค่า DM ของ Monster
+                self.is_hit = True
+                print("Monster attacks Prince!")
+        else:
+            self.is_hit = False  # รีเซ็ตสถานะเมื่อไม่ได้อยู่ในระยะโจมตี
+
+
+
+    
+
+
+
 class MenuScreen(Screen):
     pass
 
@@ -167,7 +257,8 @@ class GameScreen(Screen):
   
 
     def on_enter(self, *args):
-        self.add_widget(Prince()) 
+        self.add_widget(Prince())
+     
 
 
 class GameScreenTwo(Screen):
@@ -193,5 +284,5 @@ class GameApp(App):
 if __name__ == '__main__':
     GameApp().run()
 
-#  Builder.load_file("game.kv") 
+
 
