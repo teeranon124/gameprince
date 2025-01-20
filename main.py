@@ -45,7 +45,7 @@ class Door(Widget):
 
         elif current_screen == "stage_two" and not game_screen_2.check:  
             self.parent.parent.manager.current = "stage_three" 
-        elif not game_screen_3.check:
+        elif current_screen == "stage_three" and not game_screen_3.check:
             self.parent.parent.manager.current = "win" 
 
 class Prince(Widget):
@@ -192,29 +192,26 @@ class Prince(Widget):
 class Monster(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # สุ่มตำแหน่งเริ่มต้นจากซ้ายหรือขวาของจอ
         screen_width = Window.width
         screen_height = Window.height
         side = choice(['left', 'right'])
         y_pos = randint(50, screen_height - 50)
         self.pos = (0, y_pos) if side == 'left' else (screen_width, y_pos)
-        self.direction = [-1, 1][side == 'left']  # ซ้าย -1, ขวา +1
-        self.speed = randint(150, 250)  # กำหนดความเร็วสุ่ม
-        self.vertical_speed = randint(-100, 100)  # ความเร็วแนวตั้ง
+        self.direction = [-1, 1][side == 'left'] 
+        self.speed = randint(150, 250) 
+        self.vertical_speed = randint(-100, 100) 
 
         self.hp = 200
         self.dm = 10
         self.is_hit = False
         self.can_attack = True
         
-        # สร้าง sprite และ health bar
         with self.canvas:
             Color(0.7, 0.7, 0.7, 1)
             self.hp_bg = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80, 8))
             Color(1, 0, 0, 1)
             self.hp_bar = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80 * (self.hp / 200), 8))
 
-        # Schedule updates
         Clock.schedule_interval(self.update_position, 1 / 60)
         Clock.schedule_interval(self.update_hp_bar, 1 / 60)
 
@@ -222,15 +219,13 @@ class Monster(Widget):
         screen_width = Window.width
         screen_height = Window.height
 
-        # อัปเดตตำแหน่ง
         new_x = self.pos[0] + self.direction * self.speed * dt
         new_y = self.pos[1] + self.vertical_speed * dt
 
-        # ชนขอบหน้าจอแล้วเปลี่ยนทิศทาง
         if new_x <= 0 or new_x >= screen_width - self.size[0]:
-            self.direction *= -1  # กลับทิศทาง
+            self.direction *= -1  
         if new_y <= 0 or new_y >= screen_height - self.size[1]:
-            self.vertical_speed *= -1  # กลับทิศทางแนวตั้ง
+            self.vertical_speed *= -1  
 
         self.pos = (new_x, new_y)
 
@@ -265,7 +260,7 @@ class Monster(Widget):
             self.is_hit = False
 
     def reset_attack(self, dt):
-        self.can_attack = True  # รีเซ็ตสถานะให้สามารถโจมตีได้อีกครั้ง
+        self.can_attack = True 
 
 
     def check_collision(self, prince_rect):
@@ -283,11 +278,9 @@ class Monster(Widget):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if Door.collides(prince_rect, monster_rect) and self.can_attack:
             prince_obj.take_damage(self.dm)
-            self.can_attack = False  # ป้องกันการโจมตีซ้ำ
+            self.can_attack = False 
             print("Monster attacks Prince!")
-            
-            # ตั้งเวลาให้สามารถโจมตีได้อีกครั้งหลังจากที่โจมตีเสร็จ
-            Clock.schedule_once(self.reset_attack, 2)  # ตั้งเวลา 2 วินาที หรือเวลาที่เหมาะสม
+            Clock.schedule_once(self.reset_attack, 2)  
 
 
 class GameOver(Screen):
@@ -305,28 +298,26 @@ class MenuScreen(Screen):
 class BaseGameScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.timer = 0  # ตั้งค่าพื้นฐานเป็น 0 เพื่อให้มีการกำหนดค่าใหม่ใน on_enter
+        self.timer = 0  
         self.timer_event = None
 
     def on_enter(self, *args):
         self.start_timer()
-        self.add_widget(Prince())  # เพิ่มตัวละครหลัก
+        self.add_widget(Prince())  
 
     def on_leave(self, *args):
-        # ยกเลิก Clock เมื่อออกจาก Screen
         if self.timer_event:
             self.timer_event.cancel()
             self.timer_event = None
 
     def start_timer(self):
-        # รีเซ็ตหรือเริ่มตัวจับเวลาใหม่
         if self.timer_event:
             self.timer_event.cancel()
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
 
     def update_timer(self, dt):
         self.timer -= 1  # ลดเวลา
-        self.ids.timer_label.text = f"Time Left: {self.timer}"  # อัปเดตข้อความใน Label
+        self.ids.timer_label.text = f"Time: {self.timer}"  # อัปเดตข้อความใน Label
 
         # ตรวจสอบมอนสเตอร์ในด่าน (เหมือนเดิม)
         self.check = any(isinstance(widget, Monster) for widget in self.walk())
@@ -353,34 +344,37 @@ class BaseGameScreen(Screen):
             self.manager.current = "game_over"
 
 
-# GameScreen ด่านแรก
 class GameScreen(BaseGameScreen):
     def on_enter(self, *args):
-        self.timer = 150  # ตั้งเวลา 150 วินาที
-        self.ids.timer_label.text = f"Time Left: {self.timer}"  # อัปเดต Label
+        self.timer = 150 
+        self.ids.timer_label.text = f"Time Left: {self.timer}" 
         super().on_enter(*args)
 
 
-# GameScreenTwo ด่านที่สอง
 class GameScreenTwo(BaseGameScreen):
     def on_enter(self, *args):
-        self.timer = 120  # กำหนดเวลา 120 วินาทีสำหรับด่านที่สอง
+        self.timer = 120  
         super().on_enter(*args)
+        self.ids.door.pos_hint = {"x": 0.349, "y": 0.45}  # ตำแหน่งของประตู
+        self.ids.door.size_hint = (0.1, 0.2)  # ขนาดของประตู
  
-# GameScreenThree ด่านที่สาม
+
 class GameScreenThree(BaseGameScreen):
     def on_enter(self, *args):
-        self.timer = 100  # กำหนดเวลา 100 วินาทีสำหรับด่านที่สาม
+        self.timer = 100  
         super().on_enter(*args)
+        self.ids.door.pos_hint = {"x": 0.47, "y": 0.43}  # ตำแหน่งของประตู
+        self.ids.door.size_hint = (0.07, 0.2)  # ขนาดของประตู
+ 
 
 
 class GameApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
-        sm.add_widget(GameScreen(name="game"))
         sm.add_widget(GameOver(name = "game_over"))
         sm.add_widget(GameWin(name = "win"))
+        sm.add_widget(GameScreen(name="game"))
         sm.add_widget(GameScreenTwo(name="stage_two"))
         sm.add_widget(GameScreenThree(name="stage_three"))
         return sm

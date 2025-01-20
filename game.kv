@@ -29,7 +29,7 @@
     FloatLayout:
         canvas.before:
             Rectangle:
-                source: "images/background/cave.jpg" 
+                source: "images/background/startgame.png" 
                 pos: self.pos
                 size: self.size
 
@@ -37,8 +37,7 @@
             text: "Start Game"
             font_size: 24
             size_hint: 0.3, 0.1
-            pos_hint: {"center_x": 0.5, "center_y": 0.6}
-            background_normal: "images/background/cave.jpg"
+            pos_hint: {"center_x": 0.5, "center_y": 0.58}
             on_release:
                 app.root.current = "game"
         Button:
@@ -115,8 +114,7 @@
             id: door
 
 
-        Monster:
-            id: monster_1
+        
 
 
 
@@ -126,7 +124,7 @@
     FloatLayout:
         canvas.before:
             Rectangle:
-                source: "images/background/cave.jpg"
+                source: "images/background/stage2.jpg"
                 pos: self.pos
                 size: self.size
         Label:
@@ -139,15 +137,14 @@
             pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน   
         Door:
             id: door
-        Monster:
-            id: monster_2
+        
 
 
 <GameScreenThree>:
     FloatLayout:
         canvas.before:
             Rectangle:
-                source: "images/background/cave.jpg"
+                source: "images/background/stage3.jpg"
                 pos: self.pos
                 size: self.size
         Label:
@@ -160,4 +157,6 @@
             pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน      
         Door:
             id: door
+        Monster:
+            id: monster_2
 
