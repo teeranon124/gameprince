@@ -316,24 +316,20 @@ class BaseGameScreen(Screen):
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
 
     def update_timer(self, dt):
-        self.timer -= 1  # ลดเวลา
-        self.ids.timer_label.text = f"Time: {self.timer}"  # อัปเดตข้อความใน Label
+        self.timer -= 1  
+        self.ids.timer_label.text = f"Time: {self.timer}"  
 
-        # ตรวจสอบมอนสเตอร์ในด่าน (เหมือนเดิม)
         self.check = any(isinstance(widget, Monster) for widget in self.walk())
 
-        if self.timer <= 0:  # หากเวลาหมด
+        if self.timer <= 0:  
             self.timer_event.cancel()
             self.end_game(False)
 
-
-        # ตรวจสอบว่ามี Monster ในด่านหรือไม่
         for widget in self.walk():
             if isinstance(widget, Monster):
                 print(widget)
                 self.check = True
 
-        # หากหมดเวลา
         if self.timer <= 0:
             self.timer_event.cancel()
             self.end_game(False)
@@ -355,16 +351,16 @@ class GameScreenTwo(BaseGameScreen):
     def on_enter(self, *args):
         self.timer = 120  
         super().on_enter(*args)
-        self.ids.door.pos_hint = {"x": 0.349, "y": 0.45}  # ตำแหน่งของประตู
-        self.ids.door.size_hint = (0.1, 0.2)  # ขนาดของประตู
+        self.ids.door.pos_hint = {"x": 0.349, "y": 0.45} 
+        self.ids.door.size_hint = (0.1, 0.2) 
  
 
 class GameScreenThree(BaseGameScreen):
     def on_enter(self, *args):
         self.timer = 100  
         super().on_enter(*args)
-        self.ids.door.pos_hint = {"x": 0.47, "y": 0.43}  # ตำแหน่งของประตู
-        self.ids.door.size_hint = (0.07, 0.2)  # ขนาดของประตู
+        self.ids.door.pos_hint = {"x": 0.47, "y": 0.43} 
+        self.ids.door.size_hint = (0.07, 0.2)  
  
 
 

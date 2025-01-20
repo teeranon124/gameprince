@@ -107,18 +107,21 @@
             color: 1, 1, 1, 1  # สีขาว
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน
+            pos_hint: {"center_x": 0.9, "center_y": 0.95}
 
+        Label:
+            id: level_label
+            text: "Stage 1"  # ค่าเริ่มต้น
+            font_size: 28
+            bold: True
+            color: 1, 1, 1, 1  # สีขาว
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint: {"center_x": 0.1, "center_y": 0.95}  # ตำแหน่งซ้ายบน
 
         Door:
             id: door
 
-
-        
-
-
-
-  
 
 <GameScreenTwo>:
     FloatLayout:
@@ -134,7 +137,16 @@
             color: 1, 1, 1, 1  # สีขาว
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน   
+            pos_hint: {"center_x": 0.9, "center_y": 0.95} 
+        Label:
+            id: level_label
+            text: "Stage 2"  # ค่าเริ่มต้น
+            font_size: 28
+            bold: True
+            color: 1, 1, 1, 1  # สีขาว
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint: {"center_x": 0.1, "center_y": 0.95}  # ตำแหน่งซ้ายบน
         Door:
             id: door
         
@@ -154,9 +166,18 @@
             color: 1, 1, 1, 1  # สีขาว
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน      
+            pos_hint: {"center_x": 0.9, "center_y": 0.95}  
+        Label:
+            id: level_label
+            text: "Last Stage"  # ค่าเริ่มต้น
+            font_size: 28
+            bold: True
+            color: 1, 1, 1, 1  # สีขาว
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint: {"center_x": 0.1, "center_y": 0.95}  # ตำแหน่งซ้ายบน   
         Door:
             id: door
         Monster:
-            id: monster_2
+            id: monster_1
 
