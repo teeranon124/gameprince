@@ -70,6 +70,28 @@
             on_release:
                 app.stop()
 
+<GameWin>:
+    FloatLayout:
+        canvas.before:
+            Rectangle:
+                source: "images/background/cave.jpg"
+                pos: self.pos
+                size: self.size
+        Label:
+            text: "Win"  # ข้อความที่แสดงเมื่อเกมจบ
+            font_size: 48
+            color: 0, 1, 0, 1  # สีแดง
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint: {"center_x": 0.5, "center_y": 0.6}  # ตำแหน่งข้อความ
+        Button:
+            text: "Quit game"
+            font_size: 24
+            size_hint: 0.3, 0.1
+            pos_hint: {"center_x": 0.5, "center_y": 0.4}
+            on_release:
+                app.stop()
+
 
 <GameScreen>:
     FloatLayout:
@@ -79,12 +101,25 @@
                 pos: self.pos
                 size: self.size
 
+        Label:
+            id: timer_label
+            text: "Time Left: 150"
+            font_size: 24
+            color: 1, 1, 1, 1  # สีขาว
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน
+
+
         Door:
             id: door
 
 
         Monster:
             id: monster_1
+
+
+
   
 
 <GameScreenTwo>:
@@ -94,9 +129,18 @@
                 source: "images/background/cave.jpg"
                 pos: self.pos
                 size: self.size
-        
+        Label:
+            id: timer_label
+            text: "Time Left: 150"
+            font_size: 24
+            color: 1, 1, 1, 1  # สีขาว
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน   
         Door:
             id: door
+        Monster:
+            id: monster_2
 
 
 <GameScreenThree>:
@@ -106,7 +150,14 @@
                 source: "images/background/cave.jpg"
                 pos: self.pos
                 size: self.size
-       
+        Label:
+            id: timer_label
+            text: "Time Left: 150"
+            font_size: 24
+            color: 1, 1, 1, 1  # สีขาว
+            size_hint: None, None
+            size: self.texture_size
+            pos_hint: {"center_x": 0.9, "center_y": 0.95}  # มุมขวาบน      
         Door:
             id: door
 

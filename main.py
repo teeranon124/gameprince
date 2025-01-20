@@ -35,11 +35,18 @@ class Door(Widget):
 
     def next_stage(self, dt):
         current_screen = self.parent.parent.manager.current 
+        app = App.get_running_app()
+        game_screen = app.root.get_screen("game")
+        game_screen_2 = app.root.get_screen("stage_two")
+        game_screen_3 = app.root.get_screen("stage_three")
+        if current_screen == "game" and not game_screen.check:  
+            print(game_screen.check)
+            self.parent.parent.manager.current = "stage_two" 
 
-        if current_screen == "game":  
-            self.parent.parent.manager.current = "stage_two"  
-        elif current_screen == "stage_two":  
+        elif current_screen == "stage_two" and not game_screen_2.check:  
             self.parent.parent.manager.current = "stage_three" 
+        elif not game_screen_3.check:
+            self.parent.parent.manager.current = "win" 
 
 class Prince(Widget):
     def __init__(self, **kwargs):
@@ -93,7 +100,7 @@ class Prince(Widget):
         self.hp -= damage
         if self.hp <= 0:
             self.hp = 0
-            App.get_running_app().root.current = "game_over"  # เปลี่ยนเป็นแบบนี้
+            App.get_running_app().root.current = "game_over"  
         print(f"Prince HP: {self.hp}")
 
 
@@ -258,7 +265,8 @@ class Monster(Widget):
             self.is_hit = False
 
     def reset_attack(self, dt):
-        self.can_attack = True
+        self.can_attack = True  # รีเซ็ตสถานะให้สามารถโจมตีได้อีกครั้ง
+
 
     def check_collision(self, prince_rect):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
@@ -275,71 +283,96 @@ class Monster(Widget):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if Door.collides(prince_rect, monster_rect) and self.can_attack:
             prince_obj.take_damage(self.dm)
-            self.can_attack = False  
+            self.can_attack = False  # ป้องกันการโจมตีซ้ำ
             print("Monster attacks Prince!")
+            
+            # ตั้งเวลาให้สามารถโจมตีได้อีกครั้งหลังจากที่โจมตีเสร็จ
+            Clock.schedule_once(self.reset_attack, 2)  # ตั้งเวลา 2 วินาที หรือเวลาที่เหมาะสม
+
 
 class GameOver(Screen):
+    pass
+
+class GameWin(Screen):
     pass
 
 
 class MenuScreen(Screen):
     pass
 
-class GameScreen(Screen):
+
+
+class BaseGameScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.timer = 120  # เวลาจับเวลา (30 วินาที)
+        self.timer = 0  # ตั้งค่าพื้นฐานเป็น 0 เพื่อให้มีการกำหนดค่าใหม่ใน on_enter
         self.timer_event = None
 
     def on_enter(self, *args):
-        self.timer = 120  # ตั้งค่าเวลาสำหรับด่านแรก
         self.start_timer()
-        self.add_widget(Prince())
-        # เพิ่ม Monster ลงในด่าน
+        self.add_widget(Prince())  # เพิ่มตัวละครหลัก
+
+    def on_leave(self, *args):
+        # ยกเลิก Clock เมื่อออกจาก Screen
+        if self.timer_event:
+            self.timer_event.cancel()
+            self.timer_event = None
 
     def start_timer(self):
+        # รีเซ็ตหรือเริ่มตัวจับเวลาใหม่
         if self.timer_event:
-            self.timer_event.cancel()  # ยกเลิกตัวจับเวลาที่อาจทำงานอยู่
+            self.timer_event.cancel()
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
 
     def update_timer(self, dt):
-        self.timer -= 1
-        self.check = False
-        print(f"Time left: {self.timer}s")  # แสดงเวลาที่เหลือใน Console
+        self.timer -= 1  # ลดเวลา
+        self.ids.timer_label.text = f"Time Left: {self.timer}"  # อัปเดตข้อความใน Label
+
+        # ตรวจสอบมอนสเตอร์ในด่าน (เหมือนเดิม)
+        self.check = any(isinstance(widget, Monster) for widget in self.walk())
+
+        if self.timer <= 0:  # หากเวลาหมด
+            self.timer_event.cancel()
+            self.end_game(False)
+
+
+        # ตรวจสอบว่ามี Monster ในด่านหรือไม่
         for widget in self.walk():
             if isinstance(widget, Monster):
                 print(widget)
                 self.check = True
-        if not self.check :
-            self.manager.current = "menu"
 
+        # หากหมดเวลา
         if self.timer <= 0:
             self.timer_event.cancel()
-            self.end_game(False)  # เวลาหมดถือว่าแพ้เกม
-
-    def check_monsters_remaining(self):
-        monsters = [child for child in self.children if isinstance(child, Monster)]
-        if not monsters:  # ไม่มี Monster เหลือ
-            self.timer_event.cancel()
-            self.end_game(True)  # ผ่านด่านสำเร็จ
+            self.end_game(False)
 
     def end_game(self, success):
-        if success:
-            self.manager.current = "menu"
-        else:
+        if not success:
             print("Time's up! Game Over!")
             self.manager.current = "game_over"
-    
 
 
-
-class GameScreenTwo(Screen):
+# GameScreen ด่านแรก
+class GameScreen(BaseGameScreen):
     def on_enter(self, *args):
-        self.add_widget(Prince())
+        self.timer = 150  # ตั้งเวลา 150 วินาที
+        self.ids.timer_label.text = f"Time Left: {self.timer}"  # อัปเดต Label
+        super().on_enter(*args)
 
-class GameScreenThree(Screen):
+
+# GameScreenTwo ด่านที่สอง
+class GameScreenTwo(BaseGameScreen):
     def on_enter(self, *args):
-        self.add_widget(Prince())
+        self.timer = 120  # กำหนดเวลา 120 วินาทีสำหรับด่านที่สอง
+        super().on_enter(*args)
+ 
+# GameScreenThree ด่านที่สาม
+class GameScreenThree(BaseGameScreen):
+    def on_enter(self, *args):
+        self.timer = 100  # กำหนดเวลา 100 วินาทีสำหรับด่านที่สาม
+        super().on_enter(*args)
+
 
 class GameApp(App):
     def build(self):
@@ -347,6 +380,7 @@ class GameApp(App):
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(GameScreen(name="game"))
         sm.add_widget(GameOver(name = "game_over"))
+        sm.add_widget(GameWin(name = "win"))
         sm.add_widget(GameScreenTwo(name="stage_two"))
         sm.add_widget(GameScreenThree(name="stage_three"))
         return sm
