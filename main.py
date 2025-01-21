@@ -54,7 +54,7 @@ class Prince(Widget):
         self._keyboard.bind(on_key_up=self._on_key_up)
         self.pressed_keys = set()
         self.hp = 100
-        self.dm = 20
+        self.dm = 100
 
         self.sprites_path = "images"
         self.animations = {
@@ -245,7 +245,7 @@ class MonsterBase(Widget):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if is_attacking and Door.collides(prince_rect, monster_rect):
             if not self.is_hit:
-                self.hp -= 20
+                self.hp -= 100
                 print(f"Monster HP: {self.hp}")
                 self.is_hit = True
                 if self.hp <= 0:
@@ -281,8 +281,12 @@ class MonsterBase(Widget):
 
 class Minion(MonsterBase):
     def __init__(self, **kwargs):
-        super().__init__(hp=200, damage=10, speed_range=(150, 250), vertical_speed_range=(-100, 100), **kwargs)
+        super().__init__(hp=200, damage=1, speed_range=(150, 250), vertical_speed_range=(-100, 100), **kwargs)
 
+
+class Centaur(MonsterBase):
+    def __init__(self, **kwargs):
+        super().__init__(hp=400, damage=1, speed_range=(50, 80), vertical_speed_range=(0, 0), **kwargs)
 
 
 class GameOver(Screen):

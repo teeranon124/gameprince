@@ -22,6 +22,17 @@
             pos: self.pos
         Color:
             rgba: 1, 1, 1, 1 
+<Centaur>:
+    size_hint: None, None
+    size: 100, 100
+    canvas:
+        Color:
+            rgba: 1, 0, 1, 1  # สีของมินเนียน
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 1, 1, 1, 1 
 
 <MenuScreen>:
     FloatLayout:
@@ -154,14 +165,9 @@
             id: door
         Minion:
             id: monster_6
-        Minion:
+        Centaur:
             id: monster_7
-        Minion:
-            id: monster_8
-        Minion:
-            id: monster_9
-        Minion:
-            id: monster_10
+
 
 <GameScreenThree>:
     FloatLayout:
@@ -194,11 +200,4 @@
             id: door
         Minion:
             id: monster_11
-        Minion:
-            id: monster_12
-        Minion:
-            id: monster_13
-        Minion:
-            id: monster_14
-        Minion:
-            id: monster_15
+
