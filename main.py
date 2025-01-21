@@ -95,6 +95,14 @@ class Prince(Widget):
         self.sound = SoundLoader.load("sounds/prince/sword.mp3")
         self.sound.play()
 
+    def play_hurt_sound(self):
+        self.sound = SoundLoader.load("sounds/prince/hurt.mp3")
+        self.sound.play()
+
+    def play_walk_sound(self):
+        self.sound = SoundLoader.load("sounds/prince/footstep.mp3")
+        self.sound.play()
+
     def update_hp_bar(self, dt):
         self.hp_bg.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
         self.hp_bar.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
@@ -102,6 +110,7 @@ class Prince(Widget):
 
     def take_damage(self, damage):
         self.hp -= damage
+        self.play_hurt_sound()
         if self.hp <= 0:
             self.hp = 0
             App.get_running_app().root.current = "game_over"  
@@ -151,21 +160,25 @@ class Prince(Widget):
         self.hero.pos = self.hero_pos
 
         if 'w' in self.pressed_keys:
+            self.play_walk_sound()
             cur_y += step
             is_moving = True
             if not self.is_attacking:
                 self.change_animation('walk_up')
         elif 's' in self.pressed_keys:
+            self.play_walk_sound()
             cur_y -= step
             is_moving = True
             if not self.is_attacking:
                 self.change_animation('walk_down')
         elif 'a' in self.pressed_keys:
+            self.play_walk_sound()
             cur_x -= step
             is_moving = True
             if not self.is_attacking:
                 self.change_animation('walk_left')
         elif 'd' in self.pressed_keys:
+            self.play_walk_sound()
             cur_x += step
             is_moving = True
             if not self.is_attacking:
