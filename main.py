@@ -6,6 +6,7 @@ from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from random import choice, randint
 from kivy.graphics import Color, Rectangle
+from kivy.core.audio import SoundLoader
 
 class Door(Widget):
     def __init__(self, **kwargs):
@@ -89,6 +90,11 @@ class Prince(Widget):
         Clock.schedule_interval(self.move_step, 0)
         Clock.schedule_interval(self.update_hp_bar, 1/60)
 
+
+    def play_sword_sound(self):
+        self.sound = SoundLoader.load("sounds/prince/sword.mp3")
+        self.sound.play()
+
     def update_hp_bar(self, dt):
         self.hp_bg.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
         self.hp_bar.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
@@ -166,11 +172,12 @@ class Prince(Widget):
                 self.change_animation('walk_right')
 
         if 'g' in self.pressed_keys:
+            self.play_sword_sound()
             if not self.is_attacking:
                 self.is_attacking = True
                 direction = self.current_animation.split('_')[1]
                 self.change_animation(f'attack_{direction}')
-
+        
         if not is_moving and not self.is_attacking:
             self.current_frame = 0
 
@@ -196,6 +203,8 @@ class MonsterBase(Widget):
         self.vertical_speed = randint(*vertical_speed_range)
         self.is_hit = False
         self.can_attack = True
+        self.attack_sound = None
+        self.hit_sound = None
 
         screen_width = Window.width
         screen_height = Window.height
@@ -212,6 +221,16 @@ class MonsterBase(Widget):
 
         Clock.schedule_interval(self.update_position, 1 / 60)
         Clock.schedule_interval(self.update_hp_bar, 1 / 60)
+    def play_prince_attack_sound(self):
+        self.sound = SoundLoader.load("sounds/prince/attack.mp3")
+        self.sound.play()
+    def play_attack_sound(self):
+        if self.attack_sound:
+            self.attack_sound.play()
+
+    def play_hit_sound(self):
+        if self.hit_sound:
+            self.hit_sound.play()
 
     def update_position(self, dt):
         screen_width = Window.width
@@ -246,6 +265,8 @@ class MonsterBase(Widget):
         if is_attacking and Door.collides(prince_rect, monster_rect):
             if not self.is_hit:
                 self.hp -= 100
+                self.play_hit_sound()
+                self.play_prince_attack_sound()
                 print(f"Monster HP: {self.hp}")
                 self.is_hit = True
                 if self.hp <= 0:
@@ -275,6 +296,7 @@ class MonsterBase(Widget):
         if Door.collides(prince_rect, monster_rect) and self.can_attack:
             prince_obj.take_damage(self.damage)
             self.can_attack = False
+            # self.play_attack_sound()
             print("Monster attacks Prince!")
             Clock.schedule_once(self.reset_attack, 2)
 
@@ -282,12 +304,14 @@ class MonsterBase(Widget):
 class Minion(MonsterBase):
     def __init__(self, **kwargs):
         super().__init__(hp=200, damage=1, speed_range=(150, 250), vertical_speed_range=(-100, 100), **kwargs)
-
+        self.attack_sound = SoundLoader.load('sounds/minion/hurt.mp3')  
+        self.hit_sound = SoundLoader.load('sounds/minion/hurt.mp3')
 
 class Centaur(MonsterBase):
     def __init__(self, **kwargs):
-        super().__init__(hp=400, damage=1, speed_range=(50, 80), vertical_speed_range=(0, 0), **kwargs)
-
+        super().__init__(hp=600, damage=6, speed_range=(50, 80), vertical_speed_range=(0, 0), **kwargs)
+        self.attack_sound = SoundLoader.load('sounds/centaur/hurt.mp3')  
+        self.hit_sound = SoundLoader.load('sounds/centaur/hurt.mp3')
 
 class GameOver(Screen):
     pass
