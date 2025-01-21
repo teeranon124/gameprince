@@ -1,11 +1,9 @@
 import os
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.graphics import Rectangle
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.lang import Builder
 from random import choice, randint
 from kivy.graphics import Color, Rectangle
 
@@ -189,28 +187,28 @@ class Prince(Widget):
                 j.check_attack_collision(prince_rect, self.is_attacking)
                 j.attack_prince(prince_rect, self)
 
-class Monster(Widget):
-    def __init__(self, **kwargs):
+class MonsterBase(Widget):
+    def __init__(self, hp, damage, speed_range, vertical_speed_range, **kwargs):
         super().__init__(**kwargs)
+        self.hp = hp
+        self.damage = damage
+        self.speed = randint(*speed_range)
+        self.vertical_speed = randint(*vertical_speed_range)
+        self.is_hit = False
+        self.can_attack = True
+
         screen_width = Window.width
         screen_height = Window.height
         side = choice(['left', 'right'])
         y_pos = randint(50, screen_height - 50)
         self.pos = (0, y_pos) if side == 'left' else (screen_width, y_pos)
-        self.direction = [-1, 1][side == 'left'] 
-        self.speed = randint(150, 250) 
-        self.vertical_speed = randint(-100, 100) 
+        self.direction = [-1, 1][side == 'left']
 
-        self.hp = 200
-        self.dm = 10
-        self.is_hit = False
-        self.can_attack = True
-        
         with self.canvas:
             Color(0.7, 0.7, 0.7, 1)
             self.hp_bg = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80, 8))
             Color(1, 0, 0, 1)
-            self.hp_bar = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80 * (self.hp / 200), 8))
+            self.hp_bar = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80 * (self.hp / hp), 8))
 
         Clock.schedule_interval(self.update_position, 1 / 60)
         Clock.schedule_interval(self.update_hp_bar, 1 / 60)
@@ -223,9 +221,9 @@ class Monster(Widget):
         new_y = self.pos[1] + self.vertical_speed * dt
 
         if new_x <= 0 or new_x >= screen_width - self.size[0]:
-            self.direction *= -1  
+            self.direction *= -1
         if new_y <= 0 or new_y >= screen_height - self.size[1]:
-            self.vertical_speed *= -1  
+            self.vertical_speed *= -1
 
         self.pos = (new_x, new_y)
 
@@ -239,8 +237,9 @@ class Monster(Widget):
         if self.hp <= 0:
             print("Monster defeated!")
             if self.parent:
+                Clock.unschedule(self.update_position)
+                Clock.unschedule(self.update_hp_bar)
                 self.parent.remove_widget(self)
-
 
     def check_attack_collision(self, prince_rect, is_attacking):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
@@ -252,7 +251,6 @@ class Monster(Widget):
                 if self.hp <= 0:
                     print("Monster defeated!")
                     if self.parent:
-                        Clock.unschedule(self.reset_attack)
                         Clock.unschedule(self.update_position)
                         Clock.unschedule(self.update_hp_bar)
                         self.parent.remove_widget(self)
@@ -260,11 +258,11 @@ class Monster(Widget):
             self.is_hit = False
 
     def reset_attack(self, dt):
-        self.can_attack = True 
-
+        self.can_attack = True
 
     def check_collision(self, prince_rect):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
+        self.is_on_monster = True
         if Door.collides(prince_rect, monster_rect):
             if not self.is_on_monster:
                 self.is_on_monster = True
@@ -272,15 +270,19 @@ class Monster(Widget):
         else:
             self.is_on_monster = False
 
- 
-
     def attack_prince(self, prince_rect, prince_obj):
         monster_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if Door.collides(prince_rect, monster_rect) and self.can_attack:
-            prince_obj.take_damage(self.dm)
-            self.can_attack = False 
+            prince_obj.take_damage(self.damage)
+            self.can_attack = False
             print("Monster attacks Prince!")
-            Clock.schedule_once(self.reset_attack, 2)  
+            Clock.schedule_once(self.reset_attack, 2)
+
+
+class Minion(MonsterBase):
+    def __init__(self, **kwargs):
+        super().__init__(hp=200, damage=10, speed_range=(150, 250), vertical_speed_range=(-100, 100), **kwargs)
+
 
 
 class GameOver(Screen):
@@ -319,14 +321,14 @@ class BaseGameScreen(Screen):
         self.timer -= 1  
         self.ids.timer_label.text = f"Time: {self.timer}"  
 
-        self.check = any(isinstance(widget, Monster) for widget in self.walk())
+        self.check = any(isinstance(widget, MonsterBase) for widget in self.walk())
 
         if self.timer <= 0:  
             self.timer_event.cancel()
             self.end_game(False)
 
         for widget in self.walk():
-            if isinstance(widget, Monster):
+            if isinstance(widget, MonsterBase):
                 print(widget)
                 self.check = True
 

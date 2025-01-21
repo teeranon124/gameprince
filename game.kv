@@ -1,4 +1,3 @@
-
 <Door>:
     size_hint: None, None
     size: 135, 70
@@ -11,19 +10,18 @@
             pos: self.pos
         Color:
             rgba: 1, 1, 1, 1 
-<Monster>:
+
+<Minion>:
     size_hint: None, None
     size: 50, 50
     canvas:
         Color:
-            rgba: 0, 1, 0, 1  # สีของมอนสเตอร์
+            rgba: 0, 1, 0, 1  # สีของมินเนียน
         Rectangle:
             size: self.size
             pos: self.pos
         Color:
             rgba: 1, 1, 1, 1 
-
-
 
 <MenuScreen>:
     FloatLayout:
@@ -47,6 +45,7 @@
             pos_hint: {"center_x": 0.5, "center_y": 0.4}
             on_release:
                 app.stop()
+
 <GameOver>:
     FloatLayout:
         canvas.before:
@@ -55,7 +54,7 @@
                 pos: self.pos
                 size: self.size
         Label:
-            text: "Game Over!"  # ข้อความที่แสดงเมื่อเกมจบ
+            text: "Game Over!"
             font_size: 48
             color: 1, 0, 0, 1  # สีแดง
             size_hint: None, None
@@ -77,9 +76,9 @@
                 pos: self.pos
                 size: self.size
         Label:
-            text: "Win"  # ข้อความที่แสดงเมื่อเกมจบ
+            text: "Win"
             font_size: 48
-            color: 0, 1, 0, 1  # สีแดง
+            color: 0, 1, 0, 1  # สีเขียว
             size_hint: None, None
             size: self.texture_size
             pos_hint: {"center_x": 0.5, "center_y": 0.6}  # ตำแหน่งข้อความ
@@ -90,7 +89,6 @@
             pos_hint: {"center_x": 0.5, "center_y": 0.4}
             on_release:
                 app.stop()
-
 
 <GameScreen>:
     FloatLayout:
@@ -111,16 +109,18 @@
 
         Label:
             id: level_label
-            text: "Stage 1"  # ค่าเริ่มต้น
+            text: "Stage 1"
             font_size: 28
             bold: True
-            color: 1, 1, 1, 1  # สีขาว
+            color: 1, 1, 1, 1
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.1, "center_y": 0.95}  # ตำแหน่งซ้ายบน
+            pos_hint: {"center_x": 0.1, "center_y": 0.95}
 
         Door:
             id: door
+        Minion:
+            id: monster_1
 
 
 <GameScreenTwo>:
@@ -130,27 +130,38 @@
                 source: "images/background/stage2.jpg"
                 pos: self.pos
                 size: self.size
+
         Label:
             id: timer_label
             text: "Time Left: 150"
             font_size: 24
-            color: 1, 1, 1, 1  # สีขาว
+            color: 1, 1, 1, 1
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.9, "center_y": 0.95} 
+            pos_hint: {"center_x": 0.9, "center_y": 0.95}
+
         Label:
             id: level_label
-            text: "Stage 2"  # ค่าเริ่มต้น
+            text: "Stage 2"
             font_size: 28
             bold: True
-            color: 1, 1, 1, 1  # สีขาว
+            color: 1, 1, 1, 1
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.1, "center_y": 0.95}  # ตำแหน่งซ้ายบน
+            pos_hint: {"center_x": 0.1, "center_y": 0.95}
+
         Door:
             id: door
-        
-
+        Minion:
+            id: monster_6
+        Minion:
+            id: monster_7
+        Minion:
+            id: monster_8
+        Minion:
+            id: monster_9
+        Minion:
+            id: monster_10
 
 <GameScreenThree>:
     FloatLayout:
@@ -159,25 +170,35 @@
                 source: "images/background/stage3.jpg"
                 pos: self.pos
                 size: self.size
+
         Label:
             id: timer_label
             text: "Time Left: 150"
             font_size: 24
-            color: 1, 1, 1, 1  # สีขาว
+            color: 1, 1, 1, 1
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.9, "center_y": 0.95}  
+            pos_hint: {"center_x": 0.9, "center_y": 0.95}
+
         Label:
             id: level_label
-            text: "Last Stage"  # ค่าเริ่มต้น
+            text: "Last Stage"
             font_size: 28
             bold: True
-            color: 1, 1, 1, 1  # สีขาว
+            color: 1, 1, 1, 1
             size_hint: None, None
             size: self.texture_size
-            pos_hint: {"center_x": 0.1, "center_y": 0.95}  # ตำแหน่งซ้ายบน   
+            pos_hint: {"center_x": 0.1, "center_y": 0.95}
+
         Door:
             id: door
-        Monster:
-            id: monster_1
-
+        Minion:
+            id: monster_11
+        Minion:
+            id: monster_12
+        Minion:
+            id: monster_13
+        Minion:
+            id: monster_14
+        Minion:
+            id: monster_15
