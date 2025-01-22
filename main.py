@@ -230,7 +230,6 @@ class MonsterBase(Widget):
         screen_height = Window.height
         side = choice(["left", "right"])
 
-        # เกิดเฉพาะที่ครึ่งจอล่าง
         y_pos = randint(50, screen_height // 2 - 50)
         self.pos = (0, y_pos) if side == "left" else (screen_width, y_pos)
         self.direction = [-1, 1][side == "left"]
@@ -253,11 +252,9 @@ class MonsterBase(Widget):
         new_x = self.pos[0] + self.direction * self.speed * dt
         new_y = self.pos[1] + self.vertical_speed * dt
 
-        # บังคับไม่ให้ออกขอบจอ
         new_x = max(0, min(new_x, screen_width - self.size[0]))
         new_y = max(0, min(new_y, screen_height - self.size[1]))
 
-        # เปลี่ยนทิศทางเมื่อชนขอบ
         if new_x == 0 or new_x == screen_width - self.size[0]:
             self.direction *= -1
         if new_y == 0 or new_y == screen_height - self.size[1]:
