@@ -8,6 +8,7 @@ from random import choice, randint
 from kivy.graphics import Color, Rectangle
 from kivy.core.audio import SoundLoader
 
+
 class Door(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -17,7 +18,7 @@ class Door(Widget):
     def check_collision(self, prince_rect):
         door_rect = self.pos[0], self.pos[1], self.size[0], self.size[1]
         if self.collides(prince_rect, door_rect):
-            if not self.is_on_door :
+            if not self.is_on_door:
                 self.is_on_door = True
                 self.door_timer = Clock.schedule_once(self.next_stage, 3)
         else:
@@ -33,19 +34,20 @@ class Door(Widget):
         return not (x1 > x2 + w2 or x1 + w1 < x2 or y1 > y2 + h2 or y1 + h1 < y2)
 
     def next_stage(self, dt):
-        current_screen = self.parent.parent.manager.current 
+        current_screen = self.parent.parent.manager.current
         app = App.get_running_app()
         game_screen = app.root.get_screen("game")
         game_screen_2 = app.root.get_screen("stage_two")
         game_screen_3 = app.root.get_screen("stage_three")
-        if current_screen == "game" and not game_screen.check:  
+        if current_screen == "game" and not game_screen.check:
             print(game_screen.check)
-            self.parent.parent.manager.current = "stage_two" 
+            self.parent.parent.manager.current = "stage_two"
 
-        elif current_screen == "stage_two" and not game_screen_2.check:  
-            self.parent.parent.manager.current = "stage_three" 
+        elif current_screen == "stage_two" and not game_screen_2.check:
+            self.parent.parent.manager.current = "stage_three"
         elif current_screen == "stage_three" and not game_screen_3.check:
-            self.parent.parent.manager.current = "win" 
+            self.parent.parent.manager.current = "win"
+
 
 class Prince(Widget):
     def __init__(self, **kwargs):
@@ -59,37 +61,38 @@ class Prince(Widget):
 
         self.sprites_path = "images"
         self.animations = {
-            'walk_left': self.load_sprites('LeftRun'),
-            'walk_right': self.load_sprites('RightRun'),
-            'walk_up': self.load_sprites('UpRun'),
-            'walk_down': self.load_sprites('DownRun'),
-            'attack_left': self.load_sprites('LeftAttack'),
-            'attack_right': self.load_sprites('RightAttack'),
-            'attack_up': self.load_sprites('UpAttack'),
-            'attack_down': self.load_sprites('DownAttack'),
+            "walk_left": self.load_sprites("LeftRun"),
+            "walk_right": self.load_sprites("RightRun"),
+            "walk_up": self.load_sprites("UpRun"),
+            "walk_down": self.load_sprites("DownRun"),
+            "attack_left": self.load_sprites("LeftAttack"),
+            "attack_right": self.load_sprites("RightAttack"),
+            "attack_up": self.load_sprites("UpAttack"),
+            "attack_down": self.load_sprites("DownAttack"),
         }
 
-        self.current_animation = 'walk_down'
+        self.current_animation = "walk_down"
         self.current_frame = 0
         self.is_attacking = False
         self.hero_pos = [0, 0]
-        
 
         with self.canvas:
             self.hero = Rectangle(pos=self.hero_pos, size=(100, 100))
-            
-            Color(0.7, 0.7, 0.7, 1)  
-            self.hp_bg = Rectangle(pos=(self.hero_pos[0], self.hero_pos[1] + 110), 
-                                 size=(100, 10))
-            
-            Color(0, 0, 1, 1)  
-            self.hp_bar = Rectangle(pos=(self.hero_pos[0], self.hero_pos[1] + 110), 
-                                  size=(100 * (self.hp/100), 10))
+
+            Color(0.7, 0.7, 0.7, 1)
+            self.hp_bg = Rectangle(
+                pos=(self.hero_pos[0], self.hero_pos[1] + 110), size=(100, 10)
+            )
+
+            Color(0, 0, 1, 1)
+            self.hp_bar = Rectangle(
+                pos=(self.hero_pos[0], self.hero_pos[1] + 110),
+                size=(100 * (self.hp / 100), 10),
+            )
 
         Clock.schedule_interval(self.update_animation, 0.1)
         Clock.schedule_interval(self.move_step, 0)
-        Clock.schedule_interval(self.update_hp_bar, 1/60)
-
+        Clock.schedule_interval(self.update_hp_bar, 1 / 60)
 
     def play_sword_sound(self):
         self.sound = SoundLoader.load("sounds/prince/sword.mp3")
@@ -99,28 +102,30 @@ class Prince(Widget):
         self.sound = SoundLoader.load("sounds/prince/hurt.mp3")
         self.sound.play()
 
-    def play_walk_sound(self):
-        self.sound = SoundLoader.load("sounds/prince/footstep.mp3")
-        self.sound.play()
+    # def play_walk_sound(self):
+    #     self.sound = SoundLoader.load("sounds/prince/walk.mp3")
+    #     self.sound.play()
 
     def update_hp_bar(self, dt):
         self.hp_bg.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
         self.hp_bar.pos = (self.hero_pos[0], self.hero_pos[1] + 110)
-        self.hp_bar.size = (100 * (self.hp/100), 10)
+        self.hp_bar.size = (100 * (self.hp / 100), 10)
 
     def take_damage(self, damage):
         self.hp -= damage
         self.play_hurt_sound()
         if self.hp <= 0:
             self.hp = 0
-            App.get_running_app().root.current = "game_over"  
+            App.get_running_app().root.current = "game_over"
         print(f"Prince HP: {self.hp}")
-
-
 
     def load_sprites(self, folder_name):
         path = os.path.join(self.sprites_path, folder_name)
-        return [os.path.join(path, file) for file in sorted(os.listdir(path)) if file.endswith('.png')]
+        return [
+            os.path.join(path, file)
+            for file in sorted(os.listdir(path))
+            if file.endswith(".png")
+        ]
 
     def update_animation(self, dt):
         frames = self.animations[self.current_animation]
@@ -154,58 +159,60 @@ class Prince(Widget):
 
     def move_step(self, dt):
         cur_x, cur_y = self.hero_pos
-        step = 100 * dt
+        step = 200 * dt
         is_moving = False
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
 
-        if 'w' in self.pressed_keys:
-            self.play_walk_sound()
+        if "w" in self.pressed_keys:
             cur_y += step
             is_moving = True
             if not self.is_attacking:
-                self.change_animation('walk_up')
-        elif 's' in self.pressed_keys:
-            self.play_walk_sound()
+                self.change_animation("walk_up")
+        elif "s" in self.pressed_keys:
             cur_y -= step
             is_moving = True
             if not self.is_attacking:
-                self.change_animation('walk_down')
-        elif 'a' in self.pressed_keys:
-            self.play_walk_sound()
+                self.change_animation("walk_down")
+        elif "a" in self.pressed_keys:
             cur_x -= step
             is_moving = True
             if not self.is_attacking:
-                self.change_animation('walk_left')
-        elif 'd' in self.pressed_keys:
-            self.play_walk_sound()
+                self.change_animation("walk_left")
+        elif "d" in self.pressed_keys:
             cur_x += step
             is_moving = True
             if not self.is_attacking:
-                self.change_animation('walk_right')
+                self.change_animation("walk_right")
 
-        if 'g' in self.pressed_keys:
+        if "g" in self.pressed_keys:
             self.play_sword_sound()
             if not self.is_attacking:
                 self.is_attacking = True
-                direction = self.current_animation.split('_')[1]
-                self.change_animation(f'attack_{direction}')
-        
+                direction = self.current_animation.split("_")[1]
+                self.change_animation(f"attack_{direction}")
+
         if not is_moving and not self.is_attacking:
             self.current_frame = 0
 
         self.hero_pos = [cur_x, cur_y]
         self.hero.pos = self.hero_pos
-        
+
         door = self.parent.ids.door
-        prince_rect = self.hero_pos[0], self.hero_pos[1], self.hero.size[0], self.hero.size[1]
-        door.check_collision(prince_rect) 
+        prince_rect = (
+            self.hero_pos[0],
+            self.hero_pos[1],
+            self.hero.size[0],
+            self.hero.size[1],
+        )
+        door.check_collision(prince_rect)
 
         for i, j in self.parent.ids.items():
-            if "monster" in i and j.parent:
+            if "monster" in i and hasattr(j, "parent") and j.parent is not None:
                 j.check_collision(prince_rect)
                 j.check_attack_collision(prince_rect, self.is_attacking)
                 j.attack_prince(prince_rect, self)
+
 
 class MonsterBase(Widget):
     def __init__(self, hp, damage, speed_range, vertical_speed_range, **kwargs):
@@ -221,29 +228,23 @@ class MonsterBase(Widget):
 
         screen_width = Window.width
         screen_height = Window.height
-        side = choice(['left', 'right'])
-        y_pos = randint(50, screen_height - 50)
-        self.pos = (0, y_pos) if side == 'left' else (screen_width, y_pos)
-        self.direction = [-1, 1][side == 'left']
+        side = choice(["left", "right"])
+
+        # เกิดเฉพาะที่ครึ่งจอล่าง
+        y_pos = randint(50, screen_height // 2 - 50)
+        self.pos = (0, y_pos) if side == "left" else (screen_width, y_pos)
+        self.direction = [-1, 1][side == "left"]
 
         with self.canvas:
             Color(0.7, 0.7, 0.7, 1)
             self.hp_bg = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80, 8))
             Color(1, 0, 0, 1)
-            self.hp_bar = Rectangle(pos=(self.pos[0], self.pos[1] + 60), size=(80 * (self.hp / hp), 8))
+            self.hp_bar = Rectangle(
+                pos=(self.pos[0], self.pos[1] + 60), size=(80 * (self.hp / hp), 8)
+            )
 
         Clock.schedule_interval(self.update_position, 1 / 60)
         Clock.schedule_interval(self.update_hp_bar, 1 / 60)
-    def play_prince_attack_sound(self):
-        self.sound = SoundLoader.load("sounds/prince/attack.mp3")
-        self.sound.play()
-    def play_attack_sound(self):
-        if self.attack_sound:
-            self.attack_sound.play()
-
-    def play_hit_sound(self):
-        if self.hit_sound:
-            self.hit_sound.play()
 
     def update_position(self, dt):
         screen_width = Window.width
@@ -252,9 +253,14 @@ class MonsterBase(Widget):
         new_x = self.pos[0] + self.direction * self.speed * dt
         new_y = self.pos[1] + self.vertical_speed * dt
 
-        if new_x <= 0 or new_x >= screen_width - self.size[0]:
+        # บังคับไม่ให้ออกขอบจอ
+        new_x = max(0, min(new_x, screen_width - self.size[0]))
+        new_y = max(0, min(new_y, screen_height - self.size[1]))
+
+        # เปลี่ยนทิศทางเมื่อชนขอบ
+        if new_x == 0 or new_x == screen_width - self.size[0]:
             self.direction *= -1
-        if new_y <= 0 or new_y >= screen_height - self.size[1]:
+        if new_y == 0 or new_y == screen_height - self.size[1]:
             self.vertical_speed *= -1
 
         self.pos = (new_x, new_y)
@@ -263,6 +269,18 @@ class MonsterBase(Widget):
         self.hp_bg.pos = (self.pos[0], self.pos[1] + 60)
         self.hp_bar.pos = (self.pos[0], self.pos[1] + 60)
         self.hp_bar.size = (80 * (self.hp / 200), 8)
+
+    def play_prince_attack_sound(self):
+        self.sound = SoundLoader.load("sounds/prince/attack.mp3")
+        self.sound.play()
+
+    def play_attack_sound(self):
+        if self.attack_sound:
+            self.attack_sound.play()
+
+    def play_hit_sound(self):
+        if self.hit_sound:
+            self.hit_sound.play()
 
     def take_damage(self, damage):
         self.hp -= damage
@@ -316,18 +334,43 @@ class MonsterBase(Widget):
 
 class Minion(MonsterBase):
     def __init__(self, **kwargs):
-        super().__init__(hp=200, damage=1, speed_range=(150, 250), vertical_speed_range=(-100, 100), **kwargs)
-        self.attack_sound = SoundLoader.load('sounds/minion/hurt.mp3')  
-        self.hit_sound = SoundLoader.load('sounds/minion/hurt.mp3')
+        super().__init__(
+            hp=200,
+            damage=1,
+            speed_range=(150, 250),
+            vertical_speed_range=(-100, 100),
+            **kwargs,
+        )
+        self.hit_sound = SoundLoader.load("sounds/minion/hurt.mp3")
+
 
 class Centaur(MonsterBase):
     def __init__(self, **kwargs):
-        super().__init__(hp=600, damage=6, speed_range=(50, 80), vertical_speed_range=(0, 0), **kwargs)
-        self.attack_sound = SoundLoader.load('sounds/centaur/hurt.mp3')  
-        self.hit_sound = SoundLoader.load('sounds/centaur/hurt.mp3')
+        super().__init__(
+            hp=600,
+            damage=6,
+            speed_range=(50, 80),
+            vertical_speed_range=(0, 0),
+            **kwargs,
+        )
+        self.hit_sound = SoundLoader.load("sounds/centaur/hurt.mp3")
+
+
+class Boss(MonsterBase):
+    def __init__(self, **kwargs):
+        super().__init__(
+            hp=1500,
+            damage=6,
+            speed_range=(50, 80),
+            vertical_speed_range=(0, 0),
+            **kwargs,
+        )
+        self.hit_sound = SoundLoader.load("sounds/centaur/hurt.mp3")
+
 
 class GameOver(Screen):
     pass
+
 
 class GameWin(Screen):
     pass
@@ -337,16 +380,15 @@ class MenuScreen(Screen):
     pass
 
 
-
 class BaseGameScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.timer = 0  
+        self.timer = 0
         self.timer_event = None
 
     def on_enter(self, *args):
         self.start_timer()
-        self.add_widget(Prince())  
+        self.add_widget(Prince())
 
     def on_leave(self, *args):
         if self.timer_event:
@@ -359,12 +401,12 @@ class BaseGameScreen(Screen):
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
 
     def update_timer(self, dt):
-        self.timer -= 1  
-        self.ids.timer_label.text = f"Time: {self.timer}"  
+        self.timer -= 1
+        self.ids.timer_label.text = f"Time: {self.timer}"
 
         self.check = any(isinstance(widget, MonsterBase) for widget in self.walk())
 
-        if self.timer <= 0:  
+        if self.timer <= 0:
             self.timer_event.cancel()
             self.end_game(False)
 
@@ -385,39 +427,38 @@ class BaseGameScreen(Screen):
 
 class GameScreen(BaseGameScreen):
     def on_enter(self, *args):
-        self.timer = 150 
-        self.ids.timer_label.text = f"Time Left: {self.timer}" 
+        self.timer = 150
+        self.ids.timer_label.text = f"Time Left: {self.timer}"
         super().on_enter(*args)
 
 
 class GameScreenTwo(BaseGameScreen):
     def on_enter(self, *args):
-        self.timer = 120  
+        self.timer = 120
         super().on_enter(*args)
-        self.ids.door.pos_hint = {"x": 0.349, "y": 0.45} 
-        self.ids.door.size_hint = (0.1, 0.2) 
- 
+        self.ids.door.pos_hint = {"x": 0.349, "y": 0.45}
+        self.ids.door.size_hint = (0.1, 0.2)
+
 
 class GameScreenThree(BaseGameScreen):
     def on_enter(self, *args):
-        self.timer = 100  
+        self.timer = 100
         super().on_enter(*args)
-        self.ids.door.pos_hint = {"x": 0.47, "y": 0.43} 
-        self.ids.door.size_hint = (0.07, 0.2)  
- 
+        self.ids.door.pos_hint = {"x": 0.47, "y": 0.43}
+        self.ids.door.size_hint = (0.07, 0.2)
 
 
 class GameApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
-        sm.add_widget(GameOver(name = "game_over"))
-        sm.add_widget(GameWin(name = "win"))
+        sm.add_widget(GameOver(name="game_over"))
+        sm.add_widget(GameWin(name="win"))
         sm.add_widget(GameScreen(name="game"))
         sm.add_widget(GameScreenTwo(name="stage_two"))
         sm.add_widget(GameScreenThree(name="stage_three"))
         return sm
-    
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     GameApp().run()

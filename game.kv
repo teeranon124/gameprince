@@ -34,6 +34,17 @@
             size: self.size
             pos: self.pos
 
+<Boss>:
+    size_hint: None, None
+    size: 200, 200
+    canvas:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            source: "images/1Monsters/centaur.png"  
+            size: self.size
+            pos: self.pos
+
 <MenuScreen>:
     FloatLayout:
         canvas.before:
@@ -132,6 +143,21 @@
             id: door
         Minion:
             id: monster_1
+        Minion:
+            id: monster_2
+        Minion:
+            id: monster_3
+        Minion:
+            id: monster_4
+        Minion:
+            id: monster_5
+        Minion:
+            id: monster_6
+        Minion:
+            id: monster_7
+        Centaur:
+            id: monster_8
+
 
 
 <GameScreenTwo>:
@@ -164,10 +190,23 @@
         Door:
             id: door
         Minion:
-            id: monster_6
+            id: monster_8
+        Minion:
+            id: monster_9
+        Minion:
+            id: monster_10
+        Minion:
+            id: monster_11
+        Minion:
+            id: monster_12
         Centaur:
-            id: monster_7
-
+            id: monster_13
+        Centaur:
+            id: monster_14
+        Centaur:
+            id: monster_15            
+        Centaur:
+            id: monster_16
 
 <GameScreenThree>:
     FloatLayout:
@@ -199,5 +238,18 @@
         Door:
             id: door
         Minion:
-            id: monster_11
-
+            id: monster_17
+        Minion:
+            id: monster_18
+        Minion:
+            id: monster_19
+        Minion:
+            id: monster_20
+        Minion:
+            id: monster_21
+        Minion:
+            id: monster_22
+        Centaur:
+            id: monster_23
+        Boss:
+            id: monster_24
