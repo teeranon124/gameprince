@@ -374,7 +374,8 @@ class GameWin(Screen):
 
 
 class MenuScreen(Screen):
-    pass
+    def on_enter(self, *args):
+        App.get_running_app().play_background_sound()
 
 
 class BaseGameScreen(Screen):
@@ -449,6 +450,7 @@ class GameApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.button_sound = SoundLoader.load("sounds/game/button.mp3")
+        self.background_sound = SoundLoader.load("sounds/game/background.mp3")
 
     def build(self):
         sm = ScreenManager()
@@ -463,6 +465,11 @@ class GameApp(App):
     def play_button_sound(self):
         if self.button_sound:
             self.button_sound.play()
+
+    def play_background_sound(self):
+        if self.background_sound:
+            self.background_sound.loop = True
+            self.background_sound.play()
 
 
 if __name__ == "__main__":
