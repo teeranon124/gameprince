@@ -446,6 +446,10 @@ class GameScreenThree(BaseGameScreen):
 
 
 class GameApp(App):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.button_sound = SoundLoader.load("sounds/game/button.mp3")
+
     def build(self):
         sm = ScreenManager()
         sm.add_widget(MenuScreen(name="menu"))
@@ -455,6 +459,10 @@ class GameApp(App):
         sm.add_widget(GameScreenTwo(name="stage_two"))
         sm.add_widget(GameScreenThree(name="stage_three"))
         return sm
+
+    def play_button_sound(self):
+        if self.button_sound:
+            self.button_sound.play()
 
 
 if __name__ == "__main__":

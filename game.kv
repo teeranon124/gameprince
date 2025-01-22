@@ -59,6 +59,7 @@
             size_hint: 0.3, 0.1
             pos_hint: {"center_x": 0.5, "center_y": 0.58}
             on_release:
+                app.play_button_sound()
                 app.root.current = "game"
         Button:
             text: "Quit game"
@@ -66,6 +67,7 @@
             size_hint: 0.3, 0.1
             pos_hint: {"center_x": 0.5, "center_y": 0.4}
             on_release:
+                app.play_button_sound()
                 app.stop()
 
 <GameOver>:
@@ -88,6 +90,7 @@
             size_hint: 0.3, 0.1
             pos_hint: {"center_x": 0.5, "center_y": 0.4}
             on_release:
+                app.play_button_sound()
                 app.stop()
 
 <GameWin>:
@@ -110,6 +113,7 @@
             size_hint: 0.3, 0.1
             pos_hint: {"center_x": 0.5, "center_y": 0.4}
             on_release:
+                app.play_button_sound()
                 app.stop()
 
 <GameScreen>:
