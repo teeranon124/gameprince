@@ -34,6 +34,7 @@ class Door(Widget):
         return not (x1 > x2 + w2 or x1 + w1 < x2 or y1 > y2 + h2 or y1 + h1 < y2)
 
     def next_stage(self, dt):
+        App.get_running_app().play_door_sound()
         current_screen = self.parent.parent.manager.current
         app = App.get_running_app()
         game_screen = app.root.get_screen("stage_one")
@@ -345,7 +346,7 @@ class Centaur(MonsterBase):
     def __init__(self, **kwargs):
         super().__init__(
             hp=600,
-            damage=6,
+            damage=100,
             speed_range=(50, 80),
             vertical_speed_range=(0, 0),
             **kwargs,
@@ -366,16 +367,18 @@ class Boss(MonsterBase):
 
 
 class GameOver(Screen):
-    pass
+    def on_enter(self, *args):
+        App.get_running_app().play_background_sound("sounds/game/game-over.mp3")
 
 
 class GameWin(Screen):
-    pass
+    def on_enter(self, *args):
+        App.get_running_app().play_background_sound("sounds/game/win.mp3")
 
 
 class MenuScreen(Screen):
     def on_enter(self, *args):
-        App.get_running_app().play_background_sound()
+        App.get_running_app().play_background_sound("sounds/game/background.mp3")
 
 
 class BaseGameScreen(Screen):
@@ -428,6 +431,7 @@ class GameScreen(BaseGameScreen):
         self.timer = 150
         self.ids.timer_label.text = f"Time Left: {self.timer}"
         super().on_enter(*args)
+        App.get_running_app().play_background_sound("sounds/game/stage.mp3")
 
 
 class GameScreenTwo(BaseGameScreen):
@@ -436,6 +440,7 @@ class GameScreenTwo(BaseGameScreen):
         super().on_enter(*args)
         self.ids.door.pos_hint = {"x": 0.349, "y": 0.45}
         self.ids.door.size_hint = (0.1, 0.2)
+        App.get_running_app().play_background_sound("sounds/game/stage.mp3")
 
 
 class GameScreenThree(BaseGameScreen):
@@ -444,13 +449,16 @@ class GameScreenThree(BaseGameScreen):
         super().on_enter(*args)
         self.ids.door.pos_hint = {"x": 0.47, "y": 0.43}
         self.ids.door.size_hint = (0.07, 0.2)
+        App.get_running_app().play_background_sound("sounds/game/stage.mp3")
 
 
 class GameApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.button_sound = SoundLoader.load("sounds/game/button.mp3")
-        self.background_sound = SoundLoader.load("sounds/game/background.mp3")
+        # self.background_sound = SoundLoader.load("sounds/game/background.mp3")
+        self.door_sound = SoundLoader.load("sounds/game/door.mp3")
+        self.current_sound = None
 
     def build(self):
         sm = ScreenManager()
@@ -466,10 +474,18 @@ class GameApp(App):
         if self.button_sound:
             self.button_sound.play()
 
-    def play_background_sound(self):
-        if self.background_sound:
-            self.background_sound.loop = True
-            self.background_sound.play()
+    def play_door_sound(self):
+        if self.door_sound:
+            self.door_sound.play()
+
+    def play_background_sound(self, sound_path):
+        if self.current_sound:
+            self.current_sound.stop()
+
+        self.current_sound = SoundLoader.load(sound_path)
+        if self.current_sound:
+            self.current_sound.loop = True
+            self.current_sound.play()
 
 
 if __name__ == "__main__":
