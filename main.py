@@ -36,10 +36,10 @@ class Door(Widget):
     def next_stage(self, dt):
         current_screen = self.parent.parent.manager.current
         app = App.get_running_app()
-        game_screen = app.root.get_screen("game")
+        game_screen = app.root.get_screen("stage_one")
         game_screen_2 = app.root.get_screen("stage_two")
         game_screen_3 = app.root.get_screen("stage_three")
-        if current_screen == "game" and not game_screen.check:
+        if current_screen == "stage_one" and not game_screen.check:
             print(game_screen.check)
             self.parent.parent.manager.current = "stage_two"
 
@@ -457,7 +457,7 @@ class GameApp(App):
         sm.add_widget(MenuScreen(name="menu"))
         sm.add_widget(GameOver(name="game_over"))
         sm.add_widget(GameWin(name="win"))
-        sm.add_widget(GameScreen(name="game"))
+        sm.add_widget(GameScreen(name="stage_one"))
         sm.add_widget(GameScreenTwo(name="stage_two"))
         sm.add_widget(GameScreenThree(name="stage_three"))
         return sm
