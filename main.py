@@ -346,7 +346,7 @@ class Centaur(MonsterBase):
     def __init__(self, **kwargs):
         super().__init__(
             hp=600,
-            damage=100,
+            damage=3,
             speed_range=(50, 80),
             vertical_speed_range=(0, 0),
             **kwargs,
@@ -358,7 +358,7 @@ class Boss(MonsterBase):
     def __init__(self, **kwargs):
         super().__init__(
             hp=1500,
-            damage=6,
+            damage=21,
             speed_range=(50, 80),
             vertical_speed_range=(0, 0),
             **kwargs,
